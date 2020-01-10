@@ -1,29 +1,44 @@
 # TODO: Add an appropriate license to your skill before publishing.  See
 # the LICENSE file for more information.
 
-# Below is the list of outside modules you'll be using in your skill.
-# They might be built-in to Python, from mycroft-core or from external
-# libraries.  If you use an external library, be sure to include it
+# If you use an external library, be sure to include it
 # in the requirements.txt file so the library is installed properly
 # when the skill gets installed later by a user.
 
-from adapt.intent import IntentBuilder
 from mycroft.skills.core import MycroftSkill, intent_handler
+from adapt.intent import IntentBuilder
 from mycroft.util.log import LOG
 
-# Each skill is contained within its own class, which inherits base methods
-# from the MycroftSkill class.  You extend this class as shown below.
+import subprocess
 
-# TODO: Change "Template" to a unique name for your skill
-class TemplateSkill(MycroftSkill):
+class CallLocalScriptsSkill(MycroftSkill):
 
     # The constructor of the skill, which calls MycroftSkill's constructor
     def __init__(self):
-        super(TemplateSkill, self).__init__(name="TemplateSkill")
+        super(CallLocalScriptsSkill, self).__init__(name="CallLocalScriptsSkill")
         
         # Initialize working variables used within the skill.
         self.count = 0
 
+
+    @intent_handler(IntentBuilder("").require("Action").require("What").require("Where"))
+    def handle_light_lamp_intent(self, message):
+        if message.data["Action"] == "on":
+            self.log.debug("On have been discovered")
+            if message.data["What"] == "lamp":
+                self.log.debug("On and lamp have been discovered")
+                if message.data["Where"] == "hall":
+                    subprocess.call(['tdtool', '-n 3'])
+                    self.speak_dialog("david")
+        else: # off
+            self.log.debug("Off have been discovered")
+            if message.data["What"] == "lamp":
+                self.log.debug("On, lamp and hallway have been discovered")
+                if message.data["Where"] == "hall":
+                    subprocess.call(['tdtool', '-f 3'])
+                    self.speak_dialog("david")
+                    
+                    
     # The "handle_xxxx_intent" function is triggered by Mycroft when the
     # skill's intent is matched.  The intent is defined by the IntentBuilder()
     # pieces, and is triggered when the user's utterance matches the pattern
@@ -59,7 +74,7 @@ class TemplateSkill(MycroftSkill):
     # def stop(self):
     #    return False
 
-# The "create_skill()" method is used to create an instance of the skill.
-# Note that it's outside the class itself.
+
+    
 def create_skill():
-    return TemplateSkill()
+    return CallLocalScriptsSkill()
